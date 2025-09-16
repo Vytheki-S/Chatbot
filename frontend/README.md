@@ -1,4 +1,4 @@
-# Venue Booking Chatbot Frontend
+#Chatbot Frontend
 
 A modern React-based frontend for the AI-powered venue booking chatbot system.
 
