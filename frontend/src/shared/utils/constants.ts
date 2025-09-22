@@ -1,8 +1,8 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
-  CHATBOT_URL: import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000/api/chatbot',
-  BOOKING_URL: import.meta.env.VITE_BOOKING_API_URL || 'http://localhost:8000/api/booking',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api',
+  CHATBOT_URL: import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8001/api/chatbot',
+  BOOKING_URL: import.meta.env.VITE_BOOKING_API_URL || 'http://localhost:8001/api/booking',
   TIMEOUT: 30000, // 30 seconds
 };
 

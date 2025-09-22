@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ChatInterface, ConversationList } from '@/components/chatbot';
-import { useChat } from '@/hooks/useChat';
+import { ChatInterface, ConversationList } from '../chatbot';
+import { useChat } from '../../shared/hooks/useChat';
 import { Menu, X } from 'lucide-react';
 
 const ChatPage: React.FC = () => {
@@ -28,7 +28,7 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 

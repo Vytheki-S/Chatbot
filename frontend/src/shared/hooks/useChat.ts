@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
-import { ChatMessage, ChatRequest } from '@/types/chat';
-import chatService from '@/services/chatService';
+import { ChatMessage, ChatRequest } from '../types/chat';
+import chatService from '../../app/services/chatService';
 
 interface UseChatReturn {
   messages: ChatMessage[];

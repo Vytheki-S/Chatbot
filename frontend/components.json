@@ -1,0 +1,20 @@
+{
+  "name": "eventaura-ui",
+  "version": "1.0.0",
+  "description": "UI components for EVENTAURA application",
+  "components": {
+    "button": {
+      "path": "src/shared/components/ui/button",
+      "variants": ["default", "destructive", "outline", "secondary", "ghost", "link"]
+    },
+    "input": {
+      "path": "src/shared/components/ui/input",
+      "variants": ["default", "file", "password"]
+    },
+    "card": {
+      "path": "src/shared/components/ui/card",
+      "variants": ["default", "outline"]
+    }
+  }
+}
+

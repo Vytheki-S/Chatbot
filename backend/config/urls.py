@@ -4,4 +4,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/chatbot/', include('apps.chatbot.urls')),
     path('api/booking/', include('apps.booking.urls')),
+    path('api/', include('apps.complaints.urls')),
 ]

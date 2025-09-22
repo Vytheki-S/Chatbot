@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChatMessage } from '@/types/chat';
+import { ChatMessage } from '../../shared/types/chat';
 import { User, Bot } from 'lucide-react';
 
 interface MessageBubbleProps {
@@ -29,8 +29,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
           <div className={`px-4 py-3 rounded-2xl ${
             isUser 
-              ? 'bg-blue-500 text-white rounded-br-md' 
-              : 'bg-gray-100 text-gray-800 rounded-bl-md'
+              ? 'bg-blue-500 text-white rounded-br-md shadow-lg' 
+              : 'bg-white text-gray-800 rounded-bl-md shadow-sm'
           }`}>
             <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
               {message.message_text || message.response_text || message.content || ''}

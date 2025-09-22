@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, Mic, StopCircle } from 'lucide-react';
-import { ChatMessage } from '@/types/chat';
+import { ChatMessage } from '../../shared/types/chat';
 import MessageBubble from './MessageBubble';
 
 interface ChatInterfaceProps {
@@ -171,7 +171,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 p-4 bg-gray-50 flex-shrink-0">
+      <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
         <form onSubmit={handleSubmit} className="flex items-end gap-3">
           {/* File attachment button */}
           <button
@@ -203,7 +203,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               placeholder="Type your message here..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
               style={{ minHeight: '48px', maxHeight: '120px' }}
               disabled={isLoading}
             />

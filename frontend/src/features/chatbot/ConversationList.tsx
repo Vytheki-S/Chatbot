@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ChatSession } from '@/types/chat';
+import { ChatSession } from '../../shared/types/chat';
 import { MessageSquare, Trash2, Plus, RefreshCw } from 'lucide-react';
-import chatService from '@/services/chatService';
+import chatService from '../../app/services/chatService';
 
 interface ConversationListProps {
   userId: string;

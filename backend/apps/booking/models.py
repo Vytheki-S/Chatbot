@@ -1,119 +1,201 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from decimal import Decimal
 
 
+class Applicant(models.Model):
+    """Applicant information for bookings"""
+    ORGANIZATION_TYPE_CHOICES = [
+        ('corporate_business', 'Corporate / Business'),
+        ('educational_institution', 'Educational Institution'),
+        ('non_profit_ngo', 'Non-Profit / NGO'),
+        ('government_public_sector', 'Government / Public Sector'),
+        ('private_individual', 'Private Individual'),
+        ('religious_organization', 'Religious Organization'),
+        ('entertainment_event_management', 'Entertainment / Event Management'),
+        ('other', 'Other'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='applicants')
+    applicant_name = models.CharField(max_length=200, help_text="Name from booking form")
+    organization_type = models.CharField(max_length=50, choices=ORGANIZATION_TYPE_CHOICES, default='other', help_text="Type of organization")
+    organization = models.CharField(max_length=200, help_text="Organization/Institute name")
+    contact_no = models.CharField(max_length=20, help_text="Contact number")
+    email = models.EmailField(max_length=100, help_text="Email address")
+    
+    class Meta:
+        db_table = 'booking_applicant'
+    
+    def __str__(self):
+        return f"{self.applicant_name} - {self.organization}"
+
+
 class Venue(models.Model):
-    """Venue model matching existing venues table."""
-    venue_id = models.AutoField(primary_key=True, db_column='venue_id')
-    venue_name = models.CharField(max_length=100, db_column='venue_name')
-    capacity = models.IntegerField(db_column='capacity')
-    base_rate_2h = models.DecimalField(max_digits=10, decimal_places=2, db_column='base_rate_2h')
-    base_rate_4h = models.DecimalField(max_digits=10, decimal_places=2, db_column='base_rate_4h')
-    base_rate_6h = models.DecimalField(max_digits=10, decimal_places=2, db_column='base_rate_6h')
-    base_rate_6h_plus = models.DecimalField(max_digits=10, decimal_places=2, db_column='base_rate_6h_plus')
-    description = models.TextField(db_column='description')
+    """Venue information"""
+    VENUE_STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
+    
+    venue_name = models.CharField(max_length=100, help_text="Name of venue")
+    capacity = models.IntegerField(help_text="Maximum capacity")
+    status = models.CharField(max_length=20, choices=VENUE_STATUS_CHOICES, default='active', help_text="Venue availability status")
+    image = models.CharField(max_length=255, blank=True, null=True, help_text="Image file path/URL")
+    description = models.TextField(blank=True, null=True, help_text="Venue description")
     
     class Meta:
         db_table = 'venues'
-        ordering = ['venue_name']
     
     def __str__(self):
         return self.venue_name
+
+
+class VenueImage(models.Model):
+    """Venue image gallery"""
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='venue_images')
+    image_url = models.CharField(max_length=500, help_text="Image file path/URL")
+    display_order = models.IntegerField(default=0, help_text="Order for displaying images")
+    uploaded_at = models.DateTimeField(auto_now_add=True, help_text="When image was uploaded")
     
-    @property
-    def name(self):
-        """Alias for venue_name for backward compatibility"""
-        return self.venue_name
+    class Meta:
+        db_table = 'booking_venueimage'
+        ordering = ['display_order', 'uploaded_at']
     
-    @property
-    def hourly_rate(self):
-        """Calculate average hourly rate for backward compatibility"""
-        return (self.base_rate_2h + self.base_rate_4h + self.base_rate_6h + self.base_rate_6h_plus) / 4
+    def __str__(self):
+        return f"{self.venue.venue_name} - Image {self.id}"
+
+
+class PriceTier(models.Model):
+    """Price tiers for different durations"""
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='price_tiers')
+    duration = models.IntegerField(help_text="Duration in hours (2, 4, 6, 12)")
+    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Rate for this duration")
     
-    @property
-    def is_available(self):
-        """Always return True for now - can be enhanced later"""
-        return True
+    class Meta:
+        db_table = 'booking_pricetier'
+    
+    def __str__(self):
+        return f"{self.venue.venue_name} - {self.duration}h - ${self.price}"
 
 
 class Booking(models.Model):
-    """Booking model matching existing bookings table."""
-    STATUS_CHOICES = [
+    """Main booking model without approval_status"""
+    BOOKING_STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+        ('confirmed', 'Confirmed'),
         ('cancelled', 'Cancelled'),
+        ('completed', 'Completed'),
     ]
     
-    booking_id = models.AutoField(primary_key=True, db_column='booking_id')
-    applicant_id = models.IntegerField(db_column='applicant_id')
-    org_id = models.IntegerField(db_column='org_id')
-    event_type_id = models.IntegerField(db_column='event_type_id')
-    venue_id = models.IntegerField(db_column='venue_id')
-    event_date = models.DateField(db_column='event_date')
-    start_time = models.TimeField(db_column='start_time')
-    end_time = models.TimeField(db_column='end_time')
-    total_hours = models.DecimalField(max_digits=4, decimal_places=2, db_column='total_hours')
-    event_details = models.TextField(db_column='event_details')
-    invitation_path = models.CharField(max_length=255, db_column='invitation_path', blank=True)
-    pre_arrangement_date = models.DateField(db_column='pre_arrangement_date', null=True, blank=True)
-    pre_arrangement_start = models.TimeField(db_column='pre_arrangement_start', null=True, blank=True)
-    pre_arrangement_end = models.TimeField(db_column='pre_arrangement_end', null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_column='status')
-    permission_granted = models.BooleanField(default=False, db_column='permission_granted')
-    granted_by = models.CharField(max_length=100, db_column='granted_by', blank=True)
-    grant_date = models.DateField(db_column='grant_date', null=True, blank=True)
-    created_at = models.DateTimeField(db_column='created_at', auto_now_add=True)
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('partial', 'Partial'),
+        ('paid', 'Paid'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    EVENT_TYPE_CHOICES = [
+        ('government', 'Government Events'),
+        ('corporate', 'Corporate Events'),
+        ('educational', 'Educational Events'),
+        ('cultural', 'Cultural Programs'),
+        ('exhibitions', 'Exhibitions & Fairs'),
+        ('community', 'Community Gatherings'),
+        ('competitions', 'Competitions & Award Ceremonies'),
+        ('workshops', 'Workshops & Training'),
+        ('lectures', 'Public Lectures & Keynote Talks'),
+        ('music', 'Music Concert'),
+        ('other', 'Other'),
+    ]
+    
+    applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='bookings', null=True, blank=True)
+    booking_reference = models.CharField(max_length=20, unique=True, null=True, blank=True, help_text="Human-readable reference")
+    event_types = models.JSONField(default=list, help_text="List of selected event types")
+    custom_event_type = models.CharField(max_length=200, blank=True, null=True, help_text="Custom event type if 'other' is selected")
+    event_details = models.TextField(blank=True, null=True, help_text="Details of event")
+    additional_notes = models.TextField(blank=True, null=True, help_text="Additional notes or special requests")
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Total booking cost")
+    booking_status = models.CharField(max_length=20, choices=BOOKING_STATUS_CHOICES, default='pending', help_text="Booking status")
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending', help_text="Payment status")
+    is_public = models.BooleanField(default=False, help_text="Whether event is public")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When booking was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Last update time")
     
     class Meta:
-        db_table = 'bookings'
+        db_table = 'booking_booking'
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Booking {self.booking_id} - Venue {self.venue_id} ({self.event_date})"
+        return f"{self.booking_reference} - {self.applicant.applicant_name}"
+
+
+class BookingSlot(models.Model):
+    """Time slots for bookings"""
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='slots')
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='booking_slots')
+    tier = models.ForeignKey(PriceTier, on_delete=models.CASCADE, related_name='booking_slots')
+    start_date = models.DateField(help_text="Start date")
+    end_date = models.DateField(help_text="End date")
+    start_time = models.TimeField(help_text="Start time")
+    end_time = models.TimeField(help_text="End time")
+    venue_cost = models.DecimalField(max_digits=10, decimal_places=2, help_text="Cost for this venue slot")
+    isfullday = models.BooleanField(default=False, help_text="Whether this is a full day booking")
     
-    @property
-    def venue(self):
-        """Get venue object for backward compatibility"""
-        try:
-            return Venue.objects.get(venue_id=self.venue_id)
-        except Venue.DoesNotExist:
-            return None
+    class Meta:
+        db_table = 'booking_bookingslot'
     
-    @property
-    def user_id(self):
-        """Alias for applicant_id for backward compatibility"""
-        return str(self.applicant_id)
+    def __str__(self):
+        return f"{self.booking.booking_reference} - {self.venue.venue_name} - {self.start_date}"
+
+
+class AdditionalService(models.Model):
+    """Additional services available"""
+    service_name = models.CharField(max_length=100, help_text="Service name")
+    basic_rate = models.DecimalField(max_digits=10, decimal_places=2, help_text="Base rate for service")
+    extra_hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, help_text="Additional rate per extra hour")
+    is_mandatory = models.BooleanField(default=False, help_text="Whether service is required")
     
-    @property
-    def start_time_datetime(self):
-        """Combine date and time for backward compatibility"""
-        return timezone.datetime.combine(self.event_date, self.start_time)
+    class Meta:
+        db_table = 'booking_additionalservice'
     
-    @property
-    def end_time_datetime(self):
-        """Combine date and time for backward compatibility"""
-        return timezone.datetime.combine(self.event_date, self.end_time)
+    def __str__(self):
+        return self.service_name
+
+
+class PreArrangement(models.Model):
+    """Pre-arrangement scheduling"""
+    ARRANGEMENT_TYPE_CHOICES = [
+        ('setup', 'Setup'),
+        ('rehearsal', 'Rehearsal'),
+        ('breakdown', 'Breakdown'),
+    ]
     
-    @property
-    def total_cost(self):
-        """Calculate total cost based on venue rates"""
-        venue = self.venue
-        if not venue:
-            return Decimal('0.00')
-        
-        hours = float(self.total_hours)
-        if hours <= 2:
-            return venue.base_rate_2h
-        elif hours <= 4:
-            return venue.base_rate_4h
-        elif hours <= 6:
-            return venue.base_rate_6h
-        else:
-            return venue.base_rate_6h_plus
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='pre_arrangements')
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='pre_arrangements')
+    arrangement_type = models.CharField(max_length=20, choices=ARRANGEMENT_TYPE_CHOICES, help_text="Type of arrangement")
+    date = models.DateField(help_text="Arrangement date")
+    start_time = models.TimeField(help_text="Start time")
+    end_time = models.TimeField(help_text="End time")
+    notes = models.TextField(blank=True, null=True, help_text="Special instructions")
     
-    @property
-    def notes(self):
-        """Alias for event_details for backward compatibility"""
-        return self.event_details
+    class Meta:
+        db_table = 'booking_prearrangement'
+    
+    def __str__(self):
+        return f"{self.booking.booking_reference} - {self.arrangement_type} - {self.date}"
+
+
+class BookingService(models.Model):
+    """Services selected for a booking"""
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booking_services')
+    slot = models.ForeignKey(BookingSlot, on_delete=models.CASCADE, related_name='services')
+    service = models.ForeignKey(AdditionalService, on_delete=models.CASCADE, related_name='booking_services')
+    duration_hours = models.DecimalField(max_digits=5, decimal_places=2, help_text="Hours service is needed")
+    service_cost = models.DecimalField(max_digits=10, decimal_places=2, help_text="Cost for this service")
+    
+    class Meta:
+        db_table = 'booking_bookingservice'
+    
+    def __str__(self):
+        return f"{self.booking.booking_reference} - {self.service.service_name}"

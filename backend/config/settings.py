@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # Local apps
     'apps.chatbot',
     'apps.booking',
+    'apps.complaints',
 ]
 
 MIDDLEWARE = [
@@ -71,16 +72,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'EventAura',
-        'USER': 'root',
-        'PASSWORD': '2003',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        # 'OPTIONS': {
-        #     'charset': 'utf8mb4',
-        #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        # },
-        
+        'NAME': 'EventAura',  # Update this
+        'USER': 'root',       # Update this
+        'PASSWORD': '2003',   # Update this
+        'HOST': 'localhost',               # Update this (localhost, IP, etc.)
+        'PORT': '3306',                    # Update if different
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
@@ -138,6 +138,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:5173",  # Vite default port
     "http://127.0.0.1:5173",
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
+    "http://localhost:8080",  # Frontend port
+    "http://127.0.0.1:8080",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
@@ -145,7 +149,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
-    'OPTIONS',
+    'OPTIONS',  
     'PATCH',
     'POST',
     'PUT',

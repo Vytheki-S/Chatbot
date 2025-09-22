@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ChatPage from './pages/chat/ChatPage';
+import ChatPage from '../features/chat/ChatPage';
 import './App.css';
 
 function App() {
