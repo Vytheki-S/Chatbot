@@ -79,10 +79,14 @@ def send_message(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # For development, use first user
+        # For development, use first user or create one
         user = User.objects.first()
         if not user:
             user = User.objects.create_user('testuser', 'test@example.com', 'password')
+        
+        # If user is not authenticated, use the test user
+        if not request.user.is_authenticated:
+            request.user = user
         
         # Get or create session
         session = ChatSession.objects.filter(user_id=user.username).first()
@@ -789,3 +793,8 @@ def search_venues(request):
         return Response(serializer.data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def test_endpoint(request):
+    """Simple test endpoint"""
+    return Response({'status': 'success', 'message': 'Server is working!'})
